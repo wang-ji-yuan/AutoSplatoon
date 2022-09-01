@@ -19,27 +19,22 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    clubchatgames.cpp \
+    autosplatoon.cpp \
     inputemulator.cpp \
-    irccontrols.cpp \
     main.cpp \
     manualcontrol.cpp \
-    serialcontroller.cpp \
-    showvotes.cpp
+    serialcontroller.cpp
 
 HEADERS += \
-    clubchatgames.h \
+    autosplatoon.h \
     commonNames.h \
     inputemulator.h \
-    irccontrols.h \
     manualcontrol.h \
-    serialcontroller.h \
-    showvotes.h
+    serialcontroller.h
 
 FORMS += \
-    clubchatgames.ui \
-    manualcontrol.ui \
-    showvotes.ui
+    autosplatoon.ui \
+    manualcontrol.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -48,3 +43,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 RESOURCES += \
     Icons.qrc
+
+DISTFILES +=
+
+RC_ICONS = favicon.ico

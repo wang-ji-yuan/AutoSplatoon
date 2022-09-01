@@ -7,8 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>409</width>
-    <height>300</height>
+    <height>330</height>
    </rect>
+  </property>
+  <property name="font">
+   <font>
+    <family>Consolas</family>
+   </font>
   </property>
   <property name="contextMenuPolicy">
    <enum>Qt::DefaultContextMenu</enum>
@@ -20,10 +25,16 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>60</y>
+     <y>100</y>
      <width>368</width>
      <height>218</height>
     </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Consolas</family>
+     <pointsize>8</pointsize>
+    </font>
    </property>
    <layout class="QGridLayout" name="gridLayout_4">
     <item row="0" column="0">
@@ -41,6 +52,12 @@
           <width>40</width>
           <height>40</height>
          </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Consolas</family>
+          <pointsize>8</pointsize>
+         </font>
         </property>
         <property name="statusTip">
          <string>Up</string>
@@ -77,6 +94,12 @@
           <height>40</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <family>Consolas</family>
+          <pointsize>8</pointsize>
+         </font>
+        </property>
         <property name="statusTip">
          <string>Down</string>
         </property>
@@ -111,6 +134,12 @@
           <width>40</width>
           <height>40</height>
          </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Consolas</family>
+          <pointsize>8</pointsize>
+         </font>
         </property>
         <property name="statusTip">
          <string>Left</string>
@@ -147,6 +176,12 @@
           <height>40</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <family>Consolas</family>
+          <pointsize>8</pointsize>
+         </font>
+        </property>
         <property name="statusTip">
          <string>Right</string>
         </property>
@@ -182,6 +217,12 @@
           <height>40</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <family>Consolas</family>
+          <pointsize>8</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string/>
         </property>
@@ -201,6 +242,12 @@
     </item>
     <item row="0" column="1">
      <spacer name="horizontalSpacer">
+      <property name="font">
+       <font>
+        <family>Consolas</family>
+        <pointsize>8</pointsize>
+       </font>
+      </property>
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
@@ -227,6 +274,12 @@
           <width>40</width>
           <height>40</height>
          </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Consolas</family>
+          <pointsize>8</pointsize>
+         </font>
         </property>
         <property name="statusTip">
          <string>X</string>
@@ -263,6 +316,12 @@
           <height>40</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <family>Consolas</family>
+          <pointsize>8</pointsize>
+         </font>
+        </property>
         <property name="statusTip">
          <string>Y</string>
         </property>
@@ -297,6 +356,12 @@
           <width>40</width>
           <height>40</height>
          </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Consolas</family>
+          <pointsize>8</pointsize>
+         </font>
         </property>
         <property name="statusTip">
          <string>A</string>
@@ -333,6 +398,12 @@
           <height>40</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <family>Consolas</family>
+          <pointsize>8</pointsize>
+         </font>
+        </property>
         <property name="statusTip">
          <string>B</string>
         </property>
@@ -360,6 +431,12 @@
      <layout class="QGridLayout" name="gridLayout_3">
       <item row="0" column="0">
        <widget class="QPushButton" name="buttonSelect">
+        <property name="font">
+         <font>
+          <family>Consolas</family>
+          <pointsize>8</pointsize>
+         </font>
+        </property>
         <property name="statusTip">
          <string>Select</string>
         </property>
@@ -370,6 +447,12 @@
       </item>
       <item row="0" column="1">
        <widget class="QPushButton" name="buttonStart">
+        <property name="font">
+         <font>
+          <family>Consolas</family>
+          <pointsize>8</pointsize>
+         </font>
+        </property>
         <property name="statusTip">
          <string>Start</string>
         </property>
@@ -380,6 +463,12 @@
       </item>
       <item row="1" column="0">
        <widget class="QPushButton" name="buttonCapture">
+        <property name="font">
+         <font>
+          <family>Consolas</family>
+          <pointsize>8</pointsize>
+         </font>
+        </property>
         <property name="statusTip">
          <string>Capture</string>
         </property>
@@ -390,6 +479,12 @@
       </item>
       <item row="1" column="1">
        <widget class="QPushButton" name="buttonHome">
+        <property name="font">
+         <font>
+          <family>Consolas</family>
+          <pointsize>8</pointsize>
+         </font>
+        </property>
         <property name="statusTip">
          <string>Home</string>
         </property>
@@ -402,42 +497,113 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="horizontalLayoutWidget">
+  <widget class="QWidget" name="verticalLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>20</y>
-     <width>321</width>
-     <height>48</height>
+     <x>20</x>
+     <y>10</y>
+     <width>371</width>
+     <height>80</height>
     </rect>
    </property>
-   <layout class="QHBoxLayout" name="horizontalLayout">
+   <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QPushButton" name="buttonL">
-      <property name="text">
-       <string>L</string>
-      </property>
-      <property name="iconSize">
-       <size>
-        <width>40</width>
-        <height>40</height>
-       </size>
-      </property>
-     </widget>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QPushButton" name="buttonZL">
+        <property name="font">
+         <font>
+          <family>Consolas</family>
+          <pointsize>8</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>ZL</string>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>40</width>
+          <height>40</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="buttonZLZR">
+        <property name="font">
+         <font>
+          <family>Consolas</family>
+          <pointsize>8</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>ZL + ZR</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="buttonZR">
+        <property name="font">
+         <font>
+          <family>Consolas</family>
+          <pointsize>8</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>ZR</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
     <item>
-     <widget class="QPushButton" name="buttonLR">
-      <property name="text">
-       <string>L + R</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="buttonR">
-      <property name="text">
-       <string>R</string>
-      </property>
-     </widget>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QPushButton" name="buttonL">
+        <property name="font">
+         <font>
+          <family>Consolas</family>
+          <pointsize>8</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>L</string>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>40</width>
+          <height>40</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="buttonLR">
+        <property name="font">
+         <font>
+          <family>Consolas</family>
+          <pointsize>8</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>L + R</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="buttonR">
+        <property name="font">
+         <font>
+          <family>Consolas</family>
+          <pointsize>8</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>R</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>

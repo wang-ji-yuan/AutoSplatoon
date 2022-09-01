@@ -107,7 +107,7 @@ void SerialController::handleError(QSerialPort::SerialPortError serialPortError)
                                .arg(_serialPort.errorString())
                         << Qt::endl;
         emit reportSerialStatus(CONNECTION_FAILED);
-        close();
+        //close();
     }
 }
 
@@ -166,7 +166,7 @@ void SerialController::handleReadTimeout()
     _readData.clear();
     // Trying chocolate sync first.
     //if (_connectionTimeoutState >= 3) {
-    if (false) {
+    if (true) {
         if (_syncState == SYNCING && data.endsWith(_chocolate_sync_resp[0])) {
             _syncState = CHOCO_SYNC_STATE_0;
             masterReplyData[0] = _chocolate_sync_bytes[0];
@@ -427,6 +427,6 @@ void SerialController::recieveButtonAction(quint64 action, bool temporary)
     _sendPacket(actionArray);
     if (temporary) {
         if (action != _inpEmu.NO_INPUT)
-            _temporaryButtonTimer.start(100);
+            _temporaryButtonTimer.start(70);
     }
 }

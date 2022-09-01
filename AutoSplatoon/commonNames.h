@@ -53,16 +53,9 @@
 #define JOYCON_L 0x01
 #define JOYCON_R 0x02
 
-#define IRC_HOST "irc.chat.twitch.tv"
-#define IRC_SECURE true
-#define IRC_PORT 6697
-
 //#define IRC_HOST "localhost"
 //#define IRC_SECURE false
 //#define IRC_PORT 6667
-
-#define IRC_USERNAME "justinfan223"
-//#define IRC_PASSWORD
 
 #define CONN_TIMEOUT_TIME 5000
 
