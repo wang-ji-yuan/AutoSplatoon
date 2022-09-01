@@ -4,6 +4,7 @@
 
 ---
 **软件界面：**
+
 ![UI](image/AutoSplatoon_User_Interface.png)
 
 ---
