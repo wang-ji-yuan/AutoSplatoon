@@ -10,8 +10,8 @@
 #include <QGraphicsView>
 #include <QGraphicsScene>
 #include <QtDebug>
-#include <QProcess>
 #include <QThread>
+#include <QProcess>
 #include <QElapsedTimer>
 
 AutoSplatoon::AutoSplatoon(QWidget* parent)
@@ -143,8 +143,23 @@ void AutoSplatoon::on_serialConnectButton_clicked()
     createSerial();
 }
 
+QProcess process;
+QString output;
+
+void AutoSplatoon::on_readoutput()
+{
+    output.append(QString(process.readAllStandardOutput().data()));
+}
+
 void AutoSplatoon::on_flashButton_clicked()
 {
+    ui->serialConnectButton->setEnabled(false);
+    ui->flashButton->setEnabled(false);
+    ui->serialPortsBox->setEnabled(false);
+    ui->serialRefreshButton->setEnabled(false);
+    ui->manualButton->setEnabled(false);
+    ui->serialStatusLabel->setText("烧录中");
+
     QElapsedTimer timer;
     timer.start();
     QString cmd = QApplication::applicationDirPath();
@@ -152,18 +167,16 @@ void AutoSplatoon::on_flashButton_clicked()
     qDebug() << cmd;
     QStringList arg;
     arg << "--baud";arg << "230400";arg << "write_flash";arg << "0x0";arg << QApplication::applicationDirPath()+"/PRO-UART0.bin";
-    QProcess process;
+
     process.start(cmd, arg);
-    ui->serialConnectButton->setEnabled(false);
-    ui->flashButton->setEnabled(false);
-    ui->serialPortsBox->setEnabled(false);
-    ui->serialRefreshButton->setEnabled(false);
-    ui->serialStatusLabel->setText("烧录中");
+    connect(&process , SIGNAL(readyReadStandardOutput()) , this , SLOT(on_readoutput()));
     QEventLoop loop;
     connect(&process,SIGNAL(finished(int,QProcess::ExitStatus)),&loop,SLOT(quit()));
     loop.exec();
     process.kill();
-    if(timer.elapsed() < 10000)
+    qDebug() << output;
+    int flag = output.indexOf("100 %");
+    if(flag == -1)
         ui->serialStatusLabel->setText("烧录失败");
     else
         ui->serialStatusLabel->setText("烧录成功");
@@ -171,7 +184,9 @@ void AutoSplatoon::on_flashButton_clicked()
     ui->flashButton->setEnabled(true);
     ui->serialPortsBox->setEnabled(true);
     ui->serialRefreshButton->setEnabled(true);
+    ui->manualButton->setEnabled(true);
 
+    output = "";
 }
 
 void AutoSplatoon::executeTask()

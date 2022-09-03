@@ -7,6 +7,7 @@
 #include "inputemulator.h"
 #include "manualcontrol.h"
 #include "serialcontroller.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class AutoSplatoon;
@@ -44,6 +45,8 @@ private slots:
     void executeTask();
 
     void on_manualButton_clicked();
+
+    void on_readoutput();
 
 signals:
     void sendButtonAction(quint64 action, bool temporary);
