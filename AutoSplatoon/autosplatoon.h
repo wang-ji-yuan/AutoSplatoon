@@ -67,7 +67,8 @@ private:
     QSignalMapper* signalMapper;
 
     QImage image;
-    int column, row = 0;
+    int interval;
+    int column, row;
     bool pauseFlag = false;
     //bool startFlag = false;
     bool haltFlag = true;

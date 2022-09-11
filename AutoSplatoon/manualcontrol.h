@@ -16,7 +16,7 @@ public:
     explicit ManualControl(QWidget* parent = nullptr);
     ~ManualControl();
 
-    void sendCommand(const QString& text);
+    void sendCommand(const QString& text, int interval);
 
     //private slots:
 signals:

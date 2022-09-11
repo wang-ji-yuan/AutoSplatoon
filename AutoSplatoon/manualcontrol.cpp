@@ -85,7 +85,7 @@ void ManualControl::on_buttonReleased()
     emit buttonAction(_inpEmu.NO_INPUT, MANUAL);
 }
 
-void ManualControl::sendCommand(const QString& text)
+void ManualControl::sendCommand(const QString& text, int interval)
 {
     if (text == "A") {
         emit buttonAction(_inpEmu.BTN_A, MANUAL);
@@ -146,9 +146,9 @@ void ManualControl::sendCommand(const QString& text)
     } else {
         emit buttonAction(_inpEmu.NO_INPUT, MANUAL);
     }
-    Delay_MSec(70);
+    Delay_MSec(interval);
     emit buttonAction(_inpEmu.NO_INPUT, MANUAL);
-    Delay_MSec(70);
+    Delay_MSec(interval);
 
     //TODO. buttonAction函数第二个参数怪怪的，改为TEMPORARY似乎无法连续发送数据
     //      暂时先使用手动延时的方法，其实本质是一样的。待修改。
