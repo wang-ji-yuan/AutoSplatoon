@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>351</width>
-    <height>325</height>
+    <width>352</width>
+    <height>385</height>
    </rect>
   </property>
   <property name="font">
@@ -28,15 +28,14 @@
      <rect>
       <x>10</x>
       <y>10</y>
-      <width>335</width>
-      <height>291</height>
+      <width>334</width>
+      <height>355</height>
      </rect>
     </property>
     <property name="font">
      <font>
       <family>微软雅黑</family>
       <pointsize>8</pointsize>
-      <weight>50</weight>
       <bold>false</bold>
      </font>
     </property>
@@ -51,7 +50,6 @@
             <font>
              <family>微软雅黑</family>
              <pointsize>8</pointsize>
-             <weight>50</weight>
              <bold>false</bold>
             </font>
            </property>
@@ -66,7 +64,6 @@
             <font>
              <family>微软雅黑</family>
              <pointsize>8</pointsize>
-             <weight>50</weight>
              <bold>false</bold>
             </font>
            </property>
@@ -85,7 +82,6 @@
             <font>
              <family>微软雅黑</family>
              <pointsize>8</pointsize>
-             <weight>50</weight>
              <bold>false</bold>
             </font>
            </property>
@@ -103,7 +99,6 @@
             <font>
              <family>微软雅黑</family>
              <pointsize>8</pointsize>
-             <weight>50</weight>
              <bold>false</bold>
             </font>
            </property>
@@ -123,7 +118,6 @@
           <font>
            <family>微软雅黑</family>
            <pointsize>8</pointsize>
-           <weight>50</weight>
            <bold>false</bold>
           </font>
          </property>
@@ -143,7 +137,6 @@
             <font>
              <family>微软雅黑</family>
              <pointsize>8</pointsize>
-             <weight>50</weight>
              <bold>false</bold>
             </font>
            </property>
@@ -158,7 +151,6 @@
             <font>
              <family>微软雅黑</family>
              <pointsize>8</pointsize>
-             <weight>50</weight>
              <bold>false</bold>
             </font>
            </property>
@@ -172,31 +164,40 @@
       </layout>
      </item>
      <item>
-      <widget class="QGraphicsView" name="graphicsView">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>330</width>
-         <height>130</height>
-        </size>
-       </property>
-       <property name="font">
-        <font>
-         <family>微软雅黑</family>
-         <pointsize>8</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
-        </font>
-       </property>
-      </widget>
+      <layout class="QHBoxLayout" name="horizontalLayout_9">
+       <item>
+        <widget class="QGraphicsView" name="graphicsView">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>330</width>
+           <height>130</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>330</width>
+           <height>130</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>微软雅黑</family>
+           <pointsize>8</pointsize>
+           <bold>false</bold>
+          </font>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -206,7 +207,7 @@
           <bool>false</bool>
          </property>
          <property name="text">
-          <string>模拟按键操作时间间隔（ms）</string>
+          <string>按键操作间隔（ms）</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -226,6 +227,104 @@
          </property>
          <property name="maximum">
           <number>100</number>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_7">
+       <item>
+        <widget class="QCheckBox" name="checkBox_inverse">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;最终画出来的点黑白颠倒&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>黑白反色</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkBox_showPointer">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;显示画笔涂沫的过程&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>模拟涂沫过程</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="colorSetButton">
+         <property name="maximumSize">
+          <size>
+           <width>30</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;画笔的显示颜色.为了便于区分而已,实际的点都是黑色&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkBox_saveWhenFinish">
+         <property name="text">
+          <string>结束后保存</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_8">
+       <item>
+        <widget class="QPushButton" name="pushButton_Estimate">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>耗时估算</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>估计耗时:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_timeTotal">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>耗时:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_timeElapsed">
+         <property name="text">
+          <string>...</string>
          </property>
         </widget>
        </item>
@@ -304,7 +403,6 @@
           <font>
            <family>微软雅黑</family>
            <pointsize>8</pointsize>
-           <weight>50</weight>
            <bold>false</bold>
           </font>
          </property>
@@ -322,7 +420,6 @@
           <font>
            <family>微软雅黑</family>
            <pointsize>8</pointsize>
-           <weight>50</weight>
            <bold>false</bold>
           </font>
          </property>
@@ -340,7 +437,6 @@
           <font>
            <family>微软雅黑</family>
            <pointsize>8</pointsize>
-           <weight>50</weight>
            <bold>false</bold>
           </font>
          </property>
@@ -358,7 +454,6 @@
           <font>
            <family>微软雅黑</family>
            <pointsize>8</pointsize>
-           <weight>50</weight>
            <bold>false</bold>
           </font>
          </property>

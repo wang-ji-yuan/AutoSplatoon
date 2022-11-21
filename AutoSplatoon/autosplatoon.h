@@ -7,6 +7,7 @@
 #include "inputemulator.h"
 #include "manualcontrol.h"
 #include "serialcontroller.h"
+#include <QGraphicsScene>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -41,12 +42,22 @@ private slots:
     void on_pauseButton_clicked();
 
     void on_haltButton_clicked();
-
     void executeTask();
-
     void on_manualButton_clicked();
-
     void on_readoutput();
+    void on_colorSetButton_clicked();
+
+
+
+    void Estimate();//用时估计
+
+    void on_pushButton_Estimate_clicked();
+
+    void on_rowBox_valueChanged(int arg1);
+
+    void on_columnBox_valueChanged(int arg1);
+
+    void on_checkBox_inverse_stateChanged(int arg1);
 
 signals:
     void sendButtonAction(quint64 action, bool temporary);
@@ -67,6 +78,8 @@ private:
     QSignalMapper* signalMapper;
 
     QImage image;
+     QGraphicsScene *scene = new QGraphicsScene;
+     QColor color=Qt::red;
     int interval;
     int column, row;
     bool pauseFlag = false;
