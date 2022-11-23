@@ -2,12 +2,13 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-
+#include <QColorDialog>
 #include "commonNames.h"
 #include "inputemulator.h"
 #include "manualcontrol.h"
 #include "serialcontroller.h"
 #include <QGraphicsScene>
+#include <QLabel>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -49,15 +50,13 @@ private slots:
 
 
 
-    void Estimate();//用时估计
+    int Estimate();//用时估计
+
+    void onTimeOut();
 
     void on_pushButton_Estimate_clicked();
 
-    void on_rowBox_valueChanged(int arg1);
 
-    void on_columnBox_valueChanged(int arg1);
-
-    void on_checkBox_inverse_stateChanged(int arg1);
 
 signals:
     void sendButtonAction(quint64 action, bool temporary);
@@ -80,10 +79,13 @@ private:
     QImage image;
      QGraphicsScene *scene = new QGraphicsScene;
      QColor color=Qt::red;
+     QTimer *timer;
+
+     QLabel *label_state=new QLabel();
+     int timeUsed=0;
     int interval;
     int column, row;
     bool pauseFlag = false;
-    //bool startFlag = false;
     bool haltFlag = true;
 };
 #endif // MAINWINDOW_H

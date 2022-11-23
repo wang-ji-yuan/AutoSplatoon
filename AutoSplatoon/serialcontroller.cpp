@@ -56,15 +56,15 @@ void SerialController::handleBytesWritten(qint64 bytes)
 {
     _writeTimeoutTimer.stop();
     _bytesWritten += bytes;
-    if (_bytesWritten == _writeData.size()) {
-        _bytesWritten = 0;
-        _standardOutput << QObject::tr("Sent to port OK: %1 - ")
-                               .arg(_serialPort.portName());
-        for (char c : _writeData) {
-            _standardOutput << QString("0x%1 ").arg((uint8_t)c, 1, 16);
-        }
-        _standardOutput << Qt::endl;
-    }
+//    if (_bytesWritten == _writeData.size()) {
+//        _bytesWritten = 0;
+//        _standardOutput << QObject::tr("Sent to port OK: %1 - ")
+//                               .arg(_serialPort.portName());
+//        for (char c : _writeData) {
+//            _standardOutput << QString("0x%1 ").arg((uint8_t)c, 1, 16);
+//        }
+//        _standardOutput << Qt::endl;
+//    }
 }
 
 void SerialController::handleWriteTimeout()
@@ -411,7 +411,10 @@ uint8_t SerialController::_decrypt_dpad(uint8_t dpad)
     } else {
         dpadDecrypt = _inpEmu.A_DPAD_CENTER;
     }
-    return dpadDecrypt;
+
+
+
+        return dpadDecrypt;
 }
 
 void SerialController::temporaryButtonTimeout()

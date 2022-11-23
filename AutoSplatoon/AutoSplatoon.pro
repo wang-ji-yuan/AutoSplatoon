@@ -30,7 +30,8 @@ HEADERS += \
     commonNames.h \
     inputemulator.h \
     manualcontrol.h \
-    serialcontroller.h
+    serialcontroller.h \
+    version.h
 
 FORMS += \
     autosplatoon.ui \
