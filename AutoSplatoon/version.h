@@ -2,7 +2,7 @@
 #define VERSION_H
 
 #define SOFTWARE_NAME       "AutoSplatoon"
-#define MAIN_VERSION        0.1.4(beta)
+#define MAIN_VERSION        0.1.5(beta)
 
 #define _STR_(s)            #s
 #define __STR(s)            _STR_(s)
@@ -19,6 +19,15 @@
 #endif // VERSION_H
 /*
 更新过程：
+ver0.1.5
+重要更新！
+1.不限制图片格式，不限制图片大小；
+2，图片可以移动，缩放；
+3，可以自动自动把图片模拟成灰度效果（本次更新中最重要的功能）；
+4,现在可以直接看到反色后的效果
+
+
+
 ver0.1.4
 1.增加了软件版本显示,直接修改version.h
 2.修复0.1.3时间估算不准确的问题

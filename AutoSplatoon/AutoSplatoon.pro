@@ -23,6 +23,7 @@ SOURCES += \
     inputemulator.cpp \
     main.cpp \
     manualcontrol.cpp \
+    mygraphicsview.cpp \
     serialcontroller.cpp
 
 HEADERS += \
@@ -30,6 +31,7 @@ HEADERS += \
     commonNames.h \
     inputemulator.h \
     manualcontrol.h \
+    mygraphicsview.h \
     serialcontroller.h \
     version.h
 

@@ -26,7 +26,6 @@ signals:
 
 private slots:
     void on_buttonReleased();
-
     void on_buttonPressed(const QString& text);
 
 private:

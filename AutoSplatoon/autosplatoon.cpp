@@ -14,8 +14,14 @@
 #include <QProcess>
 #include <QElapsedTimer>
 #include <QTime>
+
+#include <QDebug>
+#include <QPixmap>
 #include "version.h"
 
+
+#define VIEW_MAX_WIDTH 320      //视口最大宽度
+#define VIEW_MAX_HEIGHT 120     //视口最大高度
 
 
 AutoSplatoon::AutoSplatoon(QWidget* parent)
@@ -26,6 +32,13 @@ AutoSplatoon::AutoSplatoon(QWidget* parent)
 
     ui->statusBar->addWidget(label_state);
     ui->statusBar->setSizeGripEnabled(false);//去掉状态栏右下角的三角
+    ui->m_pView->resize(VIEW_MAX_WIDTH,VIEW_MAX_HEIGHT);
+    this->m_nViewWidth = ui->m_pView->width();
+    this->m_nViewHeight = ui->m_pView->height();
+    m_pScene= new QGraphicsScene(this);
+    this->m_pScene->setSceneRect(0,0,VIEW_MAX_WIDTH,VIEW_MAX_HEIGHT);
+
+
     fillSerialPorts();
     signalMapper = new QSignalMapper(this);
 
@@ -46,10 +59,20 @@ AutoSplatoon::AutoSplatoon(QWidget* parent)
     manControl2->setAttribute(Qt::WA_DeleteOnClose);
     connect(manControl2, SIGNAL(buttonAction(quint64, bool)), this, SLOT(recieveButtonAction(quint64, bool)));
     connect(manControl2, SIGNAL(manControlDeletedSignal()), this, SLOT(manControlDeletedSignal()));
+
+    connect(ui->checkBox_ToGray,SIGNAL(clicked()),this,SLOT(checkBox_stateChanged()));
+    connect(ui->checkBox_inverse,SIGNAL(clicked()),this,SLOT(checkBox_stateChanged()));
+    //    connect(ui->m_pView ,SIGNAL(mouseRelease()),this,SLOT(on_pushButton_Estimate_clicked()));//想做成图像移动(放开鼠标后重新计算时间),没做好
+
 }
 
 AutoSplatoon::~AutoSplatoon()
 {
+    if(nullptr != m_pScene)
+    {
+        delete m_pScene;
+        m_pScene = nullptr;
+    }
     delete ui;
 }
 
@@ -76,38 +99,6 @@ void AutoSplatoon::manControlDeletedSignal()
     manControlDeleted = true;
 }
 
-void AutoSplatoon::on_uploadButton_clicked()
-{
-    QString fileName = QFileDialog::getOpenFileName(this,tr("Open Image"),QDir::homePath(),tr("(*.bmp)"));
-    QImage tmp = QImage(fileName);
-    if(tmp.width() == 320 && tmp.height() == 120)
-    {
-        haltFlag = true;
-        //startFlag = false;
-        pauseFlag = false;
-        image = QImage(fileName);
-        //        QGraphicsScene *scene = new QGraphicsScene;
-        scene->addPixmap(QPixmap::fromImage(image));
-        scene->setSceneRect(0,0,320,120);
-        ui->graphicsView->setScene(scene);
-        ui->graphicsView->show();
-        ui->startButton->setEnabled(true);
-        ui->label->setEnabled(true);
-        ui->label_currentRow->setEnabled(true);
-        ui->label_currentColumn->setEnabled(true);
-        ui->intervalBox->setEnabled(true);
-        ui->rowBox->setEnabled(true);
-        ui->columnBox->setEnabled(true);
-        ui->checkBox_inverse->setEnabled(true);
-        on_pushButton_Estimate_clicked();
-        ui->pushButton_Estimate->setEnabled(true);
-    }
-    else
-    {
-        QMessageBox::information(this, "错误", "图像的尺寸不是320x120");
-    }
-
-}
 
 void AutoSplatoon::recieveButtonAction(quint64 action, bool temporary)
 {
@@ -161,7 +152,7 @@ void AutoSplatoon::handleSerialStatus(uint8_t status)
         //ui->forceVanillaConnection->setEnabled(true);
         break;
     }
-label_state->setText(ui->serialStatusLabel->text());
+    label_state->setText(ui->serialStatusLabel->text());
 
     //    if (status == CONNECTING)
     //    {
@@ -272,9 +263,73 @@ void AutoSplatoon::on_flashButton_clicked()
     output = "";
 }
 
+QImage  AutoSplatoon::ConverToMono( QImage &img,bool Reserved)
+{
+    QImage imgCopy;
+
+    if (img.format() != QImage::Format_RGB888) {
+        imgCopy = QImage(img).convertToFormat(QImage::Format_RGB888);
+    } else {
+        imgCopy = QImage(img);
+    }
+    uint8_t *rgb = imgCopy.bits();
+    int newGray = 0;
+    int gray = 0;
+    int size = img.width() * img.height();
+    for (int i = 0; i < size ; i++) {
+        gray = (rgb[i * 3] + rgb[i * 3 + 1] + rgb[i * 3 + 2]) / 3;
+        if (gray > 128)
+            newGray = 255;
+        else
+            newGray = 0;
+
+        newGray=Reserved?255-newGray:newGray;//颜色反转
+
+        rgb[i * 3] = newGray;
+        rgb[i * 3 + 1] = newGray;
+        rgb[i * 3 + 2] = newGray;
+    }
+    return imgCopy;
+}
 
 
 
+QImage  AutoSplatoon::FloydSteinbergDithering(const QImage &image)
+{
+    int width = image.width();
+    int height = image.height();
+    QImage ret = image.copy();
+    for(int i = 0; i < height - 1; i ++)
+    {
+        uchar * p = ret.scanLine(i);
+        uchar *pNext = ret.scanLine(i + 1);
+        for(int j = 0; j < width - 1; j ++)
+        {
+            int diff;
+            if( p[j] > 128 )
+            {
+                diff = p[j] - 255;
+                p[j] = 255;
+            }
+            else
+            {
+                diff = p[j];
+                p[j] = 0;
+            }
+            pNext[j] = qBound(0, pNext[j] + diff * 3 / 16, 255);
+            p[j + 1] = qBound(0, p[j + 1] + diff * 3 / 16, 255);
+            pNext[j + 1] = qBound(0, pNext[j + 1] + diff * 1 / 4, 255);
+        }
+        p[width - 1] = (p[width - 1] >= 128 ? 255 : 0);
+    }
+    uchar * p = ret.scanLine(height - 1);
+    for(int j = 0; j < width; j ++)
+    {
+        p[j] = (p[j] >= 128 ? 255 : 0);
+    }
+
+    return ret;
+}
 
 
 
@@ -285,184 +340,98 @@ void AutoSplatoon::executeTask()
     QPen pen;
     pen.setWidth(1);
     pen.setColor(color);
-    if(ui->checkBox_inverse->isChecked())//反色
+    for(; row < imageDrawing.height(); row++)
     {
-        for(; row < image.height(); row++)
+        currentDistance=0;
+        nextDistance=0;
+        ui->rowBox->setValue(row);
+        if(row % 2 == 0)
         {
-            currentDistance=0;
-            nextDistance=0;
-            ui->rowBox->setValue(row);
-            if(row % 2 == 0)
+            for (int i=column; i < imageDrawing.width(); i++)
             {
-                for (int i=column; i < image.width(); i++)
+
+                if(qGray(imageDrawing.pixel(i, row)) < 128)currentDistance=i-column;
+                if(row+1<imageDrawing.height()&&qGray(imageDrawing.pixel(i, row+1)) < 128)nextDistance=i-column;
+                else nextDistance=0;
+
+
+            }
+            if(currentDistance>0||nextDistance>0)//本行或者下一行有像素点需要画
+            {
+                positionX=currentDistance>nextDistance?column+currentDistance:column+nextDistance;
+                for (; column < positionX; column++)
+                    //            for (; column < imageDrawing.width(); column++)
                 {
-                    if(qGray(image.pixel(i, row)) > 128)currentDistance=i-column;
-                    if(row+1<image.height()&&qGray(image.pixel(i, row+1)) > 128)nextDistance=i-column;
-                    else nextDistance=0;
-                }
-                if(currentDistance>0||nextDistance>0)
-                {
-                    positionX=currentDistance>nextDistance?column+currentDistance:column+nextDistance;
-                    for (; column < positionX; column++)
+                    if(haltFlag)
+                        return;
+                    while(pauseFlag)
                     {
-                        if(haltFlag)
-                            return;
-                        while(pauseFlag)
-                        {
-                            QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+                        QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+                    }
+                    if(qGray(imageDrawing.pixel(column, row)) < 128)
+                    {
+                        manControl2->sendCommand("A", interval);
+                        if(ui->checkBox_showPointer->isChecked()){
+                            m_pScene->addEllipse(column,row,1,1,pen);
                         }
-                        if(qGray(image.pixel(column, row)) > 128)
-                        {
-                            manControl2->sendCommand("A", interval);
-                            if(ui->checkBox_showPointer->isChecked()){
-                                scene->addEllipse(column,row,1,1,pen);
-                            }
-
-                        }
-                        manControl2->sendCommand("Dr", interval);
-
-                        //                    ui->rowBox->setValue(row);行没变
-                        ui->columnBox->setValue(column);
 
                     }
-                    column -= 1;
+                    manControl2->sendCommand("Dr", interval);
+
+                    //                    ui->rowBox->setValue(row);行没变
+                    ui->columnBox->setValue(column);
+
+
                 }
+                column -= 1;
             }
-            else
-            {
-                for (int i=column; i >=0; i--)
-                {
-                    if(qGray(image.pixel(i, row)) > 128)currentDistance=column-i;
-                    if(row+1<image.height()&&qGray(image.pixel(i, row+1)) > 128)nextDistance=column-i;
-                    else nextDistance=0;
-                }
-                if(currentDistance>0||nextDistance>0)//本行或者下一行有像素点需要画
-                {
-                    positionX=currentDistance>nextDistance?column-currentDistance:column-nextDistance;
-
-                    for (; column >= positionX; column--)
-                    {
-                        if(haltFlag)
-                            return;
-                        while(pauseFlag)
-                        {
-                            //                            QString text=QDateTime::fromMSecsSinceEpoch(QDateTime::currentDateTime().toMSecsSinceEpoch() - startTime.toMSecsSinceEpoch()).toUTC().toString("hh:mm:ss");
-                            //                            ui->label_timeElapsed->setText(text);
-                            QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
-                        }
-                        if(qGray(image.pixel(column, row)) > 128)
-                        {
-                            manControl2->sendCommand("A", interval);
-                            if(ui->checkBox_showPointer->isChecked()){
-                                scene->addEllipse(column,row,1,1,pen);
-                            }
-
-                        }
-                        manControl2->sendCommand("Dl", interval);
-
-                        //                    ui->rowBox->setValue(row);//
-                        ui->columnBox->setValue(column);
-                    }
-                    column += 1;
-                }
-            }
-            manControl2->sendCommand("Dd", interval);
         }
-    }
-    else
-    {
-        for(; row < image.height(); row++)
+        else
         {
-            currentDistance=0;
-            nextDistance=0;
-            ui->rowBox->setValue(row);
-            if(row % 2 == 0)
+            for (int i=column; i >=0; i--)
             {
-                for (int i=column; i < image.width(); i++)
+                if(qGray(imageDrawing.pixel(i, row)) < 128)currentDistance=column-i;
+                if(row+1<imageDrawing.height()&&qGray(imageDrawing.pixel(i, row+1)) < 128)nextDistance=column-i;
+                else nextDistance=0;
+            }
+            if(currentDistance>0||nextDistance>0)
+            {
+                positionX=currentDistance>nextDistance?column-currentDistance:column-nextDistance;
+
+                for (; column >= positionX; column--)
+                    //                for (; column >= 0; column--)
                 {
-
-                    if(qGray(image.pixel(i, row)) < 128)currentDistance=i-column;
-                    if(row+1<image.height()&&qGray(image.pixel(i, row+1)) < 128)nextDistance=i-column;
-                    else nextDistance=0;
-
-
-                }
-                if(currentDistance>0||nextDistance>0)//本行或者下一行有像素点需要画
-                {
-                    positionX=currentDistance>nextDistance?column+currentDistance:column+nextDistance;
-                    for (; column < positionX; column++)
-                        //            for (; column < image.width(); column++)
+                    if(haltFlag)
+                        return;
+                    while(pauseFlag)
                     {
-                        if(haltFlag)
-                            return;
-                        while(pauseFlag)
-                        {
-                            QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+                        //                            QString text=QDateTime::fromMSecsSinceEpoch(QDateTime::currentDateTime().toMSecsSinceEpoch() - startTime.toMSecsSinceEpoch()).toUTC().toString("hh:mm:ss");
+                        //                            ui->label_timeElapsed->setText(text);
+                        QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+                    }
+                    if(qGray(imageDrawing.pixel(column, row)) < 128)
+                    {
+                        manControl2->sendCommand("A", interval);
+                        if(ui->checkBox_showPointer->isChecked()){
+                            m_pScene->addEllipse(column,row,1,1,pen);
                         }
-                        if(qGray(image.pixel(column, row)) < 128)
-                        {
-                            manControl2->sendCommand("A", interval);
-                            if(ui->checkBox_showPointer->isChecked()){
-                                scene->addEllipse(column,row,1,1,pen);
-                            }
-
-                        }
-                        manControl2->sendCommand("Dr", interval);
-
-                        //                    ui->rowBox->setValue(row);行没变
-                        ui->columnBox->setValue(column);
-
 
                     }
-                    column -= 1;
+                    manControl2->sendCommand("Dl", interval);
+
+                    //                    ui->rowBox->setValue(row);//
+                    ui->columnBox->setValue(column);
+                    //                        QString text=QDateTime::fromMSecsSinceEpoch(QDateTime::currentDateTime().toMSecsSinceEpoch() - startTime.toMSecsSinceEpoch()).toUTC().toString("hh:mm:ss");
+                    //                        ui->label_timeElapsed->setText(text);
                 }
+                column += 1;
             }
-            else
-            {
-                for (int i=column; i >=0; i--)
-                {
-                    if(qGray(image.pixel(i, row)) < 128)currentDistance=column-i;
-                    if(row+1<image.height()&&qGray(image.pixel(i, row+1)) < 128)nextDistance=column-i;
-                    else nextDistance=0;
-                }
-                if(currentDistance>0||nextDistance>0)
-                {
-                    positionX=currentDistance>nextDistance?column-currentDistance:column-nextDistance;
-
-                    for (; column >= positionX; column--)
-                        //                for (; column >= 0; column--)
-                    {
-                        if(haltFlag)
-                            return;
-                        while(pauseFlag)
-                        {
-                            //                            QString text=QDateTime::fromMSecsSinceEpoch(QDateTime::currentDateTime().toMSecsSinceEpoch() - startTime.toMSecsSinceEpoch()).toUTC().toString("hh:mm:ss");
-                            //                            ui->label_timeElapsed->setText(text);
-                            QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
-                        }
-                        if(qGray(image.pixel(column, row)) < 128)
-                        {
-                            manControl2->sendCommand("A", interval);
-                            if(ui->checkBox_showPointer->isChecked()){
-                                scene->addEllipse(column,row,1,1,pen);
-                            }
-
-                        }
-                        manControl2->sendCommand("Dl", interval);
-
-                        //                    ui->rowBox->setValue(row);//
-                        ui->columnBox->setValue(column);
-                        //                        QString text=QDateTime::fromMSecsSinceEpoch(QDateTime::currentDateTime().toMSecsSinceEpoch() - startTime.toMSecsSinceEpoch()).toUTC().toString("hh:mm:ss");
-                        //                        ui->label_timeElapsed->setText(text);
-                    }
-                    column += 1;
-                }
-            }
-            manControl2->sendCommand("Dd", interval);
-
-
         }
+        manControl2->sendCommand("Dd", interval);
+
+
     }
+    //    }
     if(ui->checkBox_saveWhenFinish->isChecked())
     {
         manControl2->sendCommand("Sel", interval); //按"-"保存
@@ -470,9 +439,84 @@ void AutoSplatoon::executeTask()
     on_haltButton_clicked();
 }
 
+void AutoSplatoon::on_uploadButton_clicked()
+{
+
+    ui->m_pView->SetScaledDefaultValue();//不缩放
+    QString fileName = QFileDialog::getOpenFileName(this,tr("打开图片"),QDir::homePath(),tr("支持的所有格式(*.BMP *.JPG *.PNG *.PBM *.TIF);;"
+                                                                                        "Bitmap Files(*.BMP *.RLE *.DIB);;"
+                                                                                        "JPEG Files(*.JPG *.JPEG *.JPE);;"
+                                                                                        "PNG Files(*.PNG) ;;"
+                                                                                        "Portable Bit Map Files(*.PBM *.PGM *.PPM *.PNM *.PFM *.PAM);;"
+
+                                                                                        "TIFF Files(*.TIF *.TIFF)"));
+
+    if(NULL == fileName)
+    {
+
+        return;
+    }
+    imageOriginal = QImage(fileName);//原始
+    ImageProcess();
+    haltFlag = true;
+    pauseFlag = false;
+    ui->startButton->setEnabled(true);
+    ui->label->setEnabled(true);
+    ui->label_currentRow->setEnabled(true);
+    ui->label_currentColumn->setEnabled(true);
+    ui->intervalBox->setEnabled(true);
+    //    ui->rowBox->setEnabled(true);
+    //    ui->columnBox->setEnabled(true);
+
+    ui->checkBox_inverse->setEnabled(true);
+    ui->checkBox_ToGray->setEnabled(true);
+
+    on_pushButton_Estimate_clicked();
+
+    ui->pushButton_Estimate->setEnabled(true);
+}
+
+
+void AutoSplatoon::ImageProcess()
+{
+    imageBeProcessed=imageOriginal;
+    m_pScene->clear();
+    imageGray=ui->checkBox_ToGray->isChecked()?imageBeProcessed.convertToFormat(QImage::Format_Mono):imageBeProcessed;//灰度处理
+    imageMono =ConverToMono(imageGray,ui->checkBox_inverse->isChecked());//黑白反色
+
+//    imageMono=imageMono.convertToFormat(QImage::Format_Mono);
+    QPixmap pixMono = QPixmap::fromImage(imageMono);
+    //    QPixmap pixMono = QPixmap::fromImage(imageBeProcessed);
+    //获取缩放比例
+    this->m_qrDefaultShrinkedRatio=1;
+    QGraphicsPixmapItem *pPixItem = new QGraphicsPixmapItem(pixMono);
+    pPixItem->setScale(1/this->m_qrDefaultShrinkedRatio);
+    pPixItem->setFlag(QGraphicsPixmapItem::ItemIsMovable,true);
+    //添加图形项
+    m_pScene->addItem(pPixItem);
+
+    //设置场景
+    ui->m_pView->setScene(m_pScene);
+    ui->m_pView->show();
+
+}
 void AutoSplatoon::on_startButton_clicked()
 {
+
     timer->start();
+    imageDrawing =ui->m_pView->grab(ui->m_pView->sceneRect().toRect()).toImage();
+    imageDrawing.convertTo(QImage::Format_Mono);//截获的图像边上有透明效果,转为黑白后去掉
+//    QString aFileName;
+//    aFileName=QFileDialog::getSaveFileName(this,tr("保存图像"),QDir::homePath(),"jpg(*.jpg);;png(*.png);;all files(*.*)");
+//    imageDrawing.save(aFileName);
+
+    m_pScene->clear();//清理之前的内容
+    m_pScene= new QGraphicsScene(this);
+     m_pScene->addPixmap(QPixmap::fromImage(imageDrawing));
+    ui->m_pView->setQMouseEventUsable(false);
+    ui->m_pView->setScene(m_pScene);
+    ui->m_pView->show();
+
     timeUsed=0;
     ui->startButton->setEnabled(false);
     ui->pauseButton->setEnabled(true);
@@ -485,10 +529,11 @@ void AutoSplatoon::on_startButton_clicked()
     ui->label_currentRow->setText("当前行数");
     ui->label_currentColumn->setText("当前列数");
     ui->intervalBox->setEnabled(false);
-    ui->rowBox->setEnabled(false);
-    ui->columnBox->setEnabled(false);
+    //    ui->rowBox->setEnabled(false);
+    //    ui->columnBox->setEnabled(false);
     ui->colorSetButton->setEnabled(false);
     ui->checkBox_inverse->setEnabled(false);
+    ui->checkBox_ToGray->setEnabled(false);
     ui->pushButton_Estimate->setEnabled(false);
     interval = ui->intervalBox->value();
     row = ui->rowBox->value();
@@ -497,6 +542,91 @@ void AutoSplatoon::on_startButton_clicked()
 
     executeTask();
     timer->stop();
+}
+
+void AutoSplatoon::on_pushButton_Estimate_clicked()
+{
+
+    QPixmap pix=ui->m_pView->grab(ui->m_pView->sceneRect().toRect());
+    imageDrawing = pix.toImage();
+    row = ui->rowBox->value();
+    column = ui->columnBox->value();
+    int time_ms=Estimate()/1000;
+    QString timer=QTime(0, 0, 0).addSecs(time_ms).toString(QString::fromLatin1("HH:mm:ss"));
+    ui->label_timeTotal->setText(timer);
+}
+
+
+
+
+
+
+
+
+int AutoSplatoon::Estimate()
+{
+    int currentRrow=row,currentColumn=column;
+    int time_ms=0;
+    int intervalTime=ui->intervalBox->value();
+
+    int currentDistance,nextDistance,positionX;
+    for(; currentRrow < imageDrawing.height(); currentRrow++)
+    {
+        currentDistance=0;
+        nextDistance=0;
+        if(currentRrow % 2 == 0)
+        {
+            for (int i=currentColumn; i < imageDrawing.width(); i++)
+            {
+
+                if(qGray(imageDrawing.pixel(i, currentRrow)) < 128)currentDistance=i-currentColumn;
+                if(currentRrow+1<imageDrawing.height()&&qGray(imageDrawing.pixel(i, currentRrow+1)) < 128)nextDistance=i-currentColumn;
+                else nextDistance=0;
+
+            }
+            if(currentDistance>0||nextDistance>0)//本行或者下一行有像素点需要画
+            {
+                positionX=currentDistance>nextDistance?currentColumn+currentDistance:currentColumn+nextDistance;
+                for (; currentColumn < positionX; currentColumn++)
+                {
+                    if(qGray(imageDrawing.pixel(currentColumn, currentRrow)) < 128)
+                    {
+                        time_ms += intervalTime;
+                    }
+                    time_ms += intervalTime;
+                }
+                currentColumn -= 1;
+            }
+        }
+        else
+        {
+            for (int i=currentColumn; i >=0; i--)
+            {
+                if(qGray(imageDrawing.pixel(i, currentRrow)) < 128)currentDistance=currentColumn-i;
+                if(currentRrow+1<imageDrawing.height()&&qGray(imageDrawing.pixel(i, currentRrow+1)) < 128)nextDistance=currentColumn-i;
+                else nextDistance=0;
+            }
+            if(currentDistance>0||nextDistance>0)
+            {
+                positionX=currentDistance>nextDistance?currentColumn-currentDistance:currentColumn-nextDistance;
+
+                for (; currentColumn >= positionX; currentColumn--)
+                {
+
+                    if(qGray(imageDrawing.pixel(currentColumn, currentRrow)) < 128)
+                    {
+                        time_ms += intervalTime;
+
+                    }
+                    time_ms += intervalTime;
+                }
+                currentColumn += 1;
+            }
+        }
+        time_ms += intervalTime;
+    }
+    return time_ms*2.0270; // 每次按键后会再发送一个无按键的信号,所以会延时两次（每秒计算并刷新剩余时间的情况下，估计：01：30：34 实际01：30：32）
+
 }
 
 void AutoSplatoon::on_pauseButton_clicked()
@@ -523,12 +653,13 @@ void AutoSplatoon::on_haltButton_clicked()
     ui->label_currentRow->setEnabled(false);
     ui->label_currentColumn->setEnabled(false);
     ui->intervalBox->setEnabled(false);
-    ui->rowBox->setEnabled(false);
-    ui->columnBox->setEnabled(false);
+
     ui->pauseButton->setText("暂停");
     ui->checkBox_inverse->setEnabled(true);
+    ui->checkBox_ToGray->setEnabled(true);
     ui->pushButton_Estimate->setEnabled(false);
-    ui->checkBox_inverse->setEnabled(false);
+    ui->m_pView->setQMouseEventUsable(true);
+
     //startFlag = false;
     pauseFlag = false;
     haltFlag = true;
@@ -538,8 +669,8 @@ void AutoSplatoon::on_haltButton_clicked()
 
     QGraphicsScene *scene = new QGraphicsScene;
     scene = NULL;
-    ui->graphicsView->setScene(scene);
-    ui->graphicsView->show();
+    ui->m_pView->setScene(scene);
+    ui->m_pView->show();
 }
 
 void AutoSplatoon::on_manualButton_clicked()
@@ -571,144 +702,6 @@ void AutoSplatoon::on_colorSetButton_clicked()
 
 
 
-int AutoSplatoon::Estimate()
-{
-    int currentRrow=row,currentColumn=column;
-    int time_ms=0;
-    int intervalTime=ui->intervalBox->value();
-
-    int currentDistance,nextDistance,positionX;
-    if(ui->checkBox_inverse->isChecked())//反色
-    {
-        for(; currentRrow < image.height(); currentRrow++)
-        {
-            currentDistance=0;
-            nextDistance=0;
-            if(currentRrow % 2 == 0)
-            {
-                for (int i=currentColumn; i < image.width(); i++)
-                {
-                    if(qGray(image.pixel(i, currentRrow)) > 128)currentDistance=i-currentColumn;
-                    if(currentRrow+1<image.height()&&qGray(image.pixel(i, currentRrow+1)) > 128)nextDistance=i-currentColumn;
-                    else nextDistance=0;
-                }
-                if(currentDistance>0||nextDistance>0)
-                {
-                    positionX=currentDistance>nextDistance?currentColumn+currentDistance:currentColumn+nextDistance;
-                    for (; currentColumn < positionX; currentColumn++)
-                    {
-
-                        if(qGray(image.pixel(currentColumn, currentRrow)) > 128)
-                        {
-                            time_ms += intervalTime;
-
-                        }
-                        time_ms += intervalTime;
-                    }
-                    currentColumn -= 1;
-                }
-            }
-            else
-            {
-                for (int i=currentColumn; i >=0; i--)
-                {
-                    if(qGray(image.pixel(i, currentRrow)) > 128)currentDistance=currentColumn-i;
-                    if(currentRrow+1<image.height()&&qGray(image.pixel(i, currentRrow+1)) > 128)nextDistance=currentColumn-i;
-                    else nextDistance=0;
-                }
-                if(currentDistance>0||nextDistance>0)//本行或者下一行有像素点需要画
-                {
-                    positionX=currentDistance>nextDistance?currentColumn-currentDistance:currentColumn-nextDistance;
-                    for (; currentColumn >= positionX; currentColumn--)
-                    {
-                        if(qGray(image.pixel(currentColumn, currentRrow)) > 128)
-                        {
-                            time_ms += intervalTime;
-                        }
-
-                        time_ms += intervalTime;
-                    }
-                    currentColumn += 1;
-                }
-            }
-            time_ms += intervalTime;
-        }
-    }
-    else
-    {
-        for(; currentRrow < image.height(); currentRrow++)
-        {
-            currentDistance=0;
-            nextDistance=0;
-            if(currentRrow % 2 == 0)
-            {
-                for (int i=currentColumn; i < image.width(); i++)
-                {
-
-                    if(qGray(image.pixel(i, currentRrow)) < 128)currentDistance=i-currentColumn;
-                    if(currentRrow+1<image.height()&&qGray(image.pixel(i, currentRrow+1)) < 128)nextDistance=i-currentColumn;
-                    else nextDistance=0;
-
-                }
-                if(currentDistance>0||nextDistance>0)//本行或者下一行有像素点需要画
-                {
-                    positionX=currentDistance>nextDistance?currentColumn+currentDistance:currentColumn+nextDistance;
-                    for (; currentColumn < positionX; currentColumn++)
-                    {
-                        if(qGray(image.pixel(currentColumn, currentRrow)) < 128)
-                        {
-                            time_ms += intervalTime;
-                        }
-                        time_ms += intervalTime;
-                    }
-                    currentColumn -= 1;
-                }
-            }
-            else
-            {
-                for (int i=currentColumn; i >=0; i--)
-                {
-                    if(qGray(image.pixel(i, currentRrow)) < 128)currentDistance=currentColumn-i;
-                    if(currentRrow+1<image.height()&&qGray(image.pixel(i, currentRrow+1)) < 128)nextDistance=currentColumn-i;
-                    else nextDistance=0;
-                }
-                if(currentDistance>0||nextDistance>0)
-                {
-                    positionX=currentDistance>nextDistance?currentColumn-currentDistance:currentColumn-nextDistance;
-
-                    for (; currentColumn >= positionX; currentColumn--)
-                    {
-
-                        if(qGray(image.pixel(currentColumn, currentRrow)) < 128)
-                        {
-                            time_ms += intervalTime;
-
-                        }
-                        time_ms += intervalTime;
-                    }
-                    currentColumn += 1;
-                }
-            }
-            time_ms += intervalTime;
-        }
-    }
-    return time_ms*2.0270; // 每次按键后会再发送一个无按键的信号,所以会延时两次（每秒计算并刷新剩余时间的情况下，估计：01：30：34 实际01：30：32）
-
-}
-
-
-void AutoSplatoon::on_pushButton_Estimate_clicked()
-{
-    row = ui->rowBox->value();
-    column = ui->columnBox->value();
-    int time_ms=Estimate()/1000;
-    QString timer=QTime(0, 0, 0).addSecs(time_ms).toString(QString::fromLatin1("HH:mm:ss"));
-    ui->label_timeTotal->setText(timer);
-}
-
-
-
-
 
 
 
@@ -725,4 +718,10 @@ void AutoSplatoon::onTimeOut()
 
 }
 
+
+void AutoSplatoon::checkBox_stateChanged()
+{
+    ImageProcess();
+    on_pushButton_Estimate_clicked();
+}
 
