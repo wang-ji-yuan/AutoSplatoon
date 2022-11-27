@@ -64,25 +64,18 @@ private slots:
     void on_manualButton_clicked();
     void on_readoutput();
     void on_colorSetButton_clicked();
+    void on_helpButton_clicked();
 
     QImage  ConverToMono( QImage &img,bool Reserved);//转为黑白,是否反转
     QImage FloydSteinbergDithering(const QImage &image);
-
-
     int Estimate();//用时估计
-
     void onTimeOut();
 
     void on_pushButton_Estimate_clicked();
     void ImageProcess();
-
-
-
-
-
     void checkBox_stateChanged();
 
-
+    void on_savePicButton_clicked();
 
 signals:
     void sendButtonAction(quint64 action, bool temporary);

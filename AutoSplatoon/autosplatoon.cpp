@@ -359,7 +359,7 @@ void AutoSplatoon::executeTask()
             if(currentDistance>0||nextDistance>0)//本行或者下一行有像素点需要画
             {
                 positionX=currentDistance>nextDistance?column+currentDistance:column+nextDistance;
-                for (; column < positionX; column++)
+                for (; column <= positionX; column++)
                     //            for (; column < imageDrawing.width(); column++)
                 {
                     if(haltFlag)
@@ -376,6 +376,7 @@ void AutoSplatoon::executeTask()
                         }
 
                     }
+                    if(column<positionX)
                     manControl2->sendCommand("Dr", interval);
 
                     //                    ui->rowBox->setValue(row);行没变
@@ -417,12 +418,12 @@ void AutoSplatoon::executeTask()
                         }
 
                     }
+                    if(column>positionX)
                     manControl2->sendCommand("Dl", interval);
 
                     //                    ui->rowBox->setValue(row);//
                     ui->columnBox->setValue(column);
-                    //                        QString text=QDateTime::fromMSecsSinceEpoch(QDateTime::currentDateTime().toMSecsSinceEpoch() - startTime.toMSecsSinceEpoch()).toUTC().toString("hh:mm:ss");
-                    //                        ui->label_timeElapsed->setText(text);
+
                 }
                 column += 1;
             }
@@ -465,9 +466,9 @@ void AutoSplatoon::on_uploadButton_clicked()
     ui->label_currentRow->setEnabled(true);
     ui->label_currentColumn->setEnabled(true);
     ui->intervalBox->setEnabled(true);
-    //    ui->rowBox->setEnabled(true);
-    //    ui->columnBox->setEnabled(true);
 
+    ui->rowBox->setEnabled(true);
+    ui->columnBox->setEnabled(true);
     ui->checkBox_inverse->setEnabled(true);
     ui->checkBox_ToGray->setEnabled(true);
 
@@ -484,7 +485,7 @@ void AutoSplatoon::ImageProcess()
     imageGray=ui->checkBox_ToGray->isChecked()?imageBeProcessed.convertToFormat(QImage::Format_Mono):imageBeProcessed;//灰度处理
     imageMono =ConverToMono(imageGray,ui->checkBox_inverse->isChecked());//黑白反色
 
-//    imageMono=imageMono.convertToFormat(QImage::Format_Mono);
+    //    imageMono=imageMono.convertToFormat(QImage::Format_Mono);
     QPixmap pixMono = QPixmap::fromImage(imageMono);
     //    QPixmap pixMono = QPixmap::fromImage(imageBeProcessed);
     //获取缩放比例
@@ -502,17 +503,14 @@ void AutoSplatoon::ImageProcess()
 }
 void AutoSplatoon::on_startButton_clicked()
 {
-
-    timer->start();
     imageDrawing =ui->m_pView->grab(ui->m_pView->sceneRect().toRect()).toImage();
-    imageDrawing.convertTo(QImage::Format_Mono);//截获的图像边上有透明效果,转为黑白后去掉
-//    QString aFileName;
-//    aFileName=QFileDialog::getSaveFileName(this,tr("保存图像"),QDir::homePath(),"jpg(*.jpg);;png(*.png);;all files(*.*)");
-//    imageDrawing.save(aFileName);
-
+//    imageDrawing=ConverToMono(imageDrawing,false);
+    //    imageDrawing.convertTo(QImage::Format_Mono);//截获的图像边上有透明效果,转为黑白后去掉,但是又容易出黑边
+//    imageDrawing=imageBeProcessed;
+    timer->start();
     m_pScene->clear();//清理之前的内容
     m_pScene= new QGraphicsScene(this);
-     m_pScene->addPixmap(QPixmap::fromImage(imageDrawing));
+    m_pScene->addPixmap(QPixmap::fromImage(imageDrawing));
     ui->m_pView->setQMouseEventUsable(false);
     ui->m_pView->setScene(m_pScene);
     ui->m_pView->show();
@@ -524,13 +522,13 @@ void AutoSplatoon::on_startButton_clicked()
     ui->uploadButton->setEnabled(false);
 
     ui->label->setEnabled(false);
-    //    ui->label_currentRow->setEnabled(false);
-    //    ui->label_currentColumn->setEnabled(false);
+    ui->label_currentRow->setEnabled(false);
+    ui->label_currentColumn->setEnabled(false);
     ui->label_currentRow->setText("当前行数");
     ui->label_currentColumn->setText("当前列数");
     ui->intervalBox->setEnabled(false);
-    //    ui->rowBox->setEnabled(false);
-    //    ui->columnBox->setEnabled(false);
+    ui->rowBox->setEnabled(false);
+    ui->columnBox->setEnabled(false);
     ui->colorSetButton->setEnabled(false);
     ui->checkBox_inverse->setEnabled(false);
     ui->checkBox_ToGray->setEnabled(false);
@@ -556,13 +554,6 @@ void AutoSplatoon::on_pushButton_Estimate_clicked()
     ui->label_timeTotal->setText(timer);
 }
 
-
-
-
-
-
-
-
 int AutoSplatoon::Estimate()
 {
     int currentRrow=row,currentColumn=column;
@@ -587,12 +578,13 @@ int AutoSplatoon::Estimate()
             if(currentDistance>0||nextDistance>0)//本行或者下一行有像素点需要画
             {
                 positionX=currentDistance>nextDistance?currentColumn+currentDistance:currentColumn+nextDistance;
-                for (; currentColumn < positionX; currentColumn++)
+                for (; currentColumn <=positionX; currentColumn++)
                 {
                     if(qGray(imageDrawing.pixel(currentColumn, currentRrow)) < 128)
                     {
                         time_ms += intervalTime;
                     }
+                    if(currentColumn<positionX)
                     time_ms += intervalTime;
                 }
                 currentColumn -= 1;
@@ -618,6 +610,7 @@ int AutoSplatoon::Estimate()
                         time_ms += intervalTime;
 
                     }
+                    if(currentColumn>positionX)
                     time_ms += intervalTime;
                 }
                 currentColumn += 1;
@@ -653,14 +646,15 @@ void AutoSplatoon::on_haltButton_clicked()
     ui->label_currentRow->setEnabled(false);
     ui->label_currentColumn->setEnabled(false);
     ui->intervalBox->setEnabled(false);
-
+    ui->rowBox->setEnabled(true);
+    ui->columnBox->setEnabled(true);
     ui->pauseButton->setText("暂停");
     ui->checkBox_inverse->setEnabled(true);
     ui->checkBox_ToGray->setEnabled(true);
     ui->pushButton_Estimate->setEnabled(false);
     ui->m_pView->setQMouseEventUsable(true);
-
-    //startFlag = false;
+    ui->label_currentRow->setEnabled(true);
+    ui->label_currentColumn->setEnabled(true);
     pauseFlag = false;
     haltFlag = true;
     column = 0; row = 0;
@@ -725,3 +719,16 @@ void AutoSplatoon::checkBox_stateChanged()
     on_pushButton_Estimate_clicked();
 }
 
+void AutoSplatoon::on_helpButton_clicked()
+{
+    QMessageBox::information(this, "使用说明", "使用步骤：\n1.购买ESP32的开发板\n2.根据开发板串口芯片安装串口驱动\n3.选择串口连接开发板(第一次先烧录)\n4.打开游戏，在广场的邮箱处进入涂鸦界面并按下左摇杆清空所有内容(最好设置比较长的自动休眠时间)\n5.让switch进入“更改握法/排序”界面并等待虚拟的手柄出现\n6.通过软件上“手动控制”界面操作Switch回到游戏涂鸦界面\n7.继续在“手动控制”界面操作,确保游戏界面上光标在左上角,且最小画笔\n8.关闭“手动控制”界面,上传图片\n9.在预览框根据需要移动图片或缩放图片，默认打开灰度效果，关闭黑白反色\n10.灰度效果 黑白反色切换后会自动刷新耗时估算，但移动/缩放后不会，需要手动点击\n11.在预览框看到满意的效果后点击开始就可以了.默认画完后会自动保存并退出涂鸦界面\n 注:\n1.如果看到游戏机上的涂鸦错位了就点击结束,通过“手动控制”界面清空内容，光标回到左上重新开始吧\n2.按键操作间隔数值小速度快但容易导致错位，同时开发板离Switch最好近一点", QMessageBox::Yes, QMessageBox::Yes);
+}
+
+void AutoSplatoon::on_savePicButton_clicked()
+{
+    imageDrawing =ui->m_pView->grab(ui->m_pView->sceneRect().toRect()).toImage();
+//    imageDrawing.convertTo(QImage::Format_Mono);//截获的图像边上有透明效果,转为黑白后去掉,但是又容易出黑边
+    QString aFileName;
+    aFileName=QFileDialog::getSaveFileName(this,tr("保存图像"),QDir::homePath(),"jpg(*.jpg);;png(*.png);;all files(*.*)");
+    imageDrawing.save(aFileName);
+}

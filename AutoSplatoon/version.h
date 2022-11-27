@@ -2,7 +2,7 @@
 #define VERSION_H
 
 #define SOFTWARE_NAME       "AutoSplatoon"
-#define MAIN_VERSION        0.1.5(beta)
+#define MAIN_VERSION        0.1.6(beta)
 
 #define _STR_(s)            #s
 #define __STR(s)            _STR_(s)
@@ -19,6 +19,13 @@
 #endif // VERSION_H
 /*
 更新过程：
+ver0.1.6
+1.增加了把当前的界面保存为320x120图片的功能,如果需要后期修改(添加文字之类的比较方便).
+2.最天晚上在电视上用工具涂了一次，发现我之前的算法有点问题（向右涂的时候最后一格没有涂到,SWITCH屏太小，之前没注意到这个问题)。这个版本修复了这个问题.
+
+
+
+
 ver0.1.5
 重要更新！
 1.不限制图片格式，不限制图片大小；

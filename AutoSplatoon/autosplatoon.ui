@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>433</width>
-    <height>380</height>
+    <height>354</height>
    </rect>
   </property>
   <property name="font">
@@ -433,7 +433,7 @@
         <item>
          <widget class="QPushButton" name="uploadButton">
           <property name="enabled">
-           <bool>false</bool>
+           <bool>true</bool>
           </property>
           <property name="font">
            <font>
@@ -444,6 +444,20 @@
           </property>
           <property name="text">
            <string>上传图片</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="savePicButton">
+          <property name="text">
+           <string>保存图片</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="helpButton">
+          <property name="text">
+           <string>使用说明</string>
           </property>
          </widget>
         </item>
